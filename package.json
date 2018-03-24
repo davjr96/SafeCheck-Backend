@@ -1,0 +1,25 @@
+{
+  "name": "safecheck-backend",
+  "version": "1.0.0",
+  "description": "Back-end for HackUVA 2018 team project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davjr96/SafeCheck-Backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davjr96/SafeCheck-Backend/issues"
+  },
+  "homepage": "https://github.com/davjr96/SafeCheck-Backend#readme",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "lodash": "^4.17.4",
+    "pg": "^6.4.1"
+  }
+}
