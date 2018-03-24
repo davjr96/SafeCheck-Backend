@@ -28,8 +28,6 @@ module.exports = function(app) {
               result["inst"] = true;
               inst = dbres1.rows[0];
 
-              //earth_box(ll_to_earth($lat, $lng), $radius_in_metres)
-
               pool.query(
                 "SELECT * FROM alerts WHERE earth_box(ll_to_earth(" +
                   inst["lat"] +
@@ -56,10 +54,24 @@ module.exports = function(app) {
   });
 
   app.post("/api/alert", (req, res) => {
-    var phone = req.query.phone;
-    var lat = req.query.phone;
-    var long = req.query.phone;
-    var emergency = req.query.emergency;
+    var phone = req.body.phone;
+    var lat = req.body.lat;
+    var long = req.body.long;
+    var emergency = req.body.emergency;
+
+    pool.query(
+      "INSERT INTO alerts (phone,lat,long,emergency,status) VALUES (" +
+        "'" +
+        [phone, lat, long, emergency, "Open"].join("','") +
+        "'" +
+        ");",
+      function(err, dbres) {
+        if (err) {
+          return console.error("error running query", err);
+        }
+        res.sendStatus(201);
+      }
+    );
   });
 
   app.post("/api/register", (req, res) => {
