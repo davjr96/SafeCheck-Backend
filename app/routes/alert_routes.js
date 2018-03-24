@@ -20,14 +20,32 @@ module.exports = function(app) {
         pool.query(
           "SELECT * FROM institutions WHERE phone='" + phone + "';",
           function(err1, dbres1) {
-            if (err) {
+            if (err1) {
               return console.error("error running query", err1);
             }
             if (dbres1.rows.length > 0) {
               var result = {};
               result["inst"] = true;
-              result["alerts"] = dbres1.rows;
-              res.status(200).send(result);
+              inst = dbres1.rows[0];
+
+              //earth_box(ll_to_earth($lat, $lng), $radius_in_metres)
+
+              pool.query(
+                "SELECT * FROM alerts WHERE earth_box(ll_to_earth(" +
+                  inst["lat"] +
+                  " ," +
+                  inst["long"] +
+                  ")," +
+                  inst["radius"] +
+                  ") @> ll_to_earth(alerts.lat, alerts.long);",
+                function(err2, dbres2) {
+                  if (err2) {
+                    return console.error("error running query", err2);
+                  }
+                  result["alerts"] = dbres2.rows;
+                  res.status(200).send(result);
+                }
+              );
             } else {
               res.sendStatus(404);
             }
@@ -35,6 +53,13 @@ module.exports = function(app) {
         );
       }
     });
+  });
+
+  app.post("/api/alert", (req, res) => {
+    var phone = req.query.phone;
+    var lat = req.query.phone;
+    var long = req.query.phone;
+    var emergency = req.query.emergency;
   });
 
   app.post("/api/register", (req, res) => {
