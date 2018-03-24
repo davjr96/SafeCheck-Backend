@@ -1,6 +1,33 @@
 const pool = require("../../config/db");
+const cred = require("../../config/cred");
+// require the Twilio module and create a REST client
+const client = require("twilio")(cred.accountSid, cred.authToken);
 
 module.exports = function(app) {
+  function sendAlert(lat, long) {
+    pool.query(
+      "SELECT institutions.phone FROM institutions WHERE earth_box(ll_to_earth(" +
+        lat +
+        " ," +
+        long +
+        "),institutions.radius) @> ll_to_earth(institutions.lat, institutions.long);",
+      function(err2, dbres2) {
+        if (err2) {
+          return console.error("error running query", err2);
+        }
+        if (dbres2.rows.length > 0) {
+          client.messages
+            .create({
+              to: dbres2.rows[0]["phone"],
+              from: "+16173000841",
+              body:
+                "There has been an alert in your location! Open SafeCheck App for more info."
+            })
+            .then(message => console.log(message.sid));
+        }
+      }
+    );
+  }
   app.get("/api/alert", (req, res) => {
     var phone = req.query.phone;
 
@@ -69,6 +96,8 @@ module.exports = function(app) {
         if (err) {
           return console.error("error running query", err);
         }
+        sendAlert(lat, long);
+
         res.sendStatus(201);
       }
     );
