@@ -2,7 +2,7 @@
   "name": "safecheck-backend",
   "version": "1.0.0",
   "description": "Back-end for HackUVA 2018 team project",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
