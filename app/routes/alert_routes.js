@@ -1,10 +1,11 @@
 const pool = require("../../config/db");
 const cred = require("../../config/cred");
-// require the Twilio module and create a REST client
 const client = require("twilio")(cred.accountSid, cred.authToken);
+var request = require("request");
 
 module.exports = function(app) {
   function sendAlert(lat, long, emergency) {
+    console.log(emergency);
     pool.query(
       "SELECT institutions.phone FROM institutions WHERE earth_box(ll_to_earth(" +
         lat +
@@ -16,24 +17,51 @@ module.exports = function(app) {
           return console.error("error running query", err2);
         }
         if (dbres2.rows.length > 0) {
-          if (emergency == false) {
-            client.messages
-              .create({
-                to: dbres2.rows[0]["phone"],
-                from: "+16173000841",
-                body:
-                  "There has been an alert in your location! Open SafeCheck App for more info."
-              })
-              .then(message => console.log(message.sid));
+          if (emergency === "false") {
+            for (var i = 0; i < dbres2.rows.length; i++) {
+              console.log(dbres2.rows[i]["phone"]);
+              client.messages
+                .create({
+                  to: dbres2.rows[i]["phone"],
+                  from: "+16173000841",
+                  body:
+                    "There has been an alert in your location! Open SafeCheck App for more info."
+                })
+                .then(message => console.log(message.sid));
+            }
           } else {
-            client.messages
-              .create({
-                to: dbres2.rows[0]["phone"],
-                from: "+16173000841",
-                body:
-                  "There has been an alert in your location! Emergency Services have been notified Open SafeCheck App for more info."
-              })
-              .then(message => console.log(message.sid));
+            for (var i = 0; i < dbres2.rows.length; i++) {
+              client.messages
+                .create({
+                  to: dbres2.rows[i]["phone"],
+                  from: "+16173000841",
+                  body:
+                    "There has been an alert in your location! Emergency Services have been notified Open SafeCheck App for more info."
+                })
+                .then(message => console.log(message.sid));
+
+              var options = {
+                method: "POST",
+                url: "https://api-sandbox.safetrek.io/v1/alarms",
+                headers: {
+                  Authorization: "Bearer " + cred.accessToken,
+                  "Content-Type": "application/json"
+                },
+                body: {
+                  services: { police: true, fire: false, medical: false },
+                  "location.coordinates": {
+                    lat: parseFloat(lat),
+                    lng: parseFloat(long),
+                    accuracy: 5
+                  }
+                },
+                json: true
+              };
+              request(options, function(error, response, body) {
+                if (error) throw new Error(error);
+                console.log(body);
+              });
+            }
           }
         }
       }
