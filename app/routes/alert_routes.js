@@ -4,7 +4,7 @@ const cred = require("../../config/cred");
 const client = require("twilio")(cred.accountSid, cred.authToken);
 
 module.exports = function(app) {
-  function sendAlert(lat, long) {
+  function sendAlert(lat, long, emergency) {
     pool.query(
       "SELECT institutions.phone FROM institutions WHERE earth_box(ll_to_earth(" +
         lat +
@@ -16,14 +16,25 @@ module.exports = function(app) {
           return console.error("error running query", err2);
         }
         if (dbres2.rows.length > 0) {
-          client.messages
-            .create({
-              to: dbres2.rows[0]["phone"],
-              from: "+16173000841",
-              body:
-                "There has been an alert in your location! Open SafeCheck App for more info."
-            })
-            .then(message => console.log(message.sid));
+          if (!emergency) {
+            client.messages
+              .create({
+                to: dbres2.rows[0]["phone"],
+                from: "+16173000841",
+                body:
+                  "There has been an alert in your location! Open SafeCheck App for more info."
+              })
+              .then(message => console.log(message.sid));
+          } else {
+            client.messages
+              .create({
+                to: dbres2.rows[0]["phone"],
+                from: "+16173000841",
+                body:
+                  "There has been an alert in your location! Emergency Services have been notified Open SafeCheck App for more info."
+              })
+              .then(message => console.log(message.sid));
+          }
         }
       }
     );
@@ -96,7 +107,7 @@ module.exports = function(app) {
         if (err) {
           return console.error("error running query", err);
         }
-        sendAlert(lat, long);
+        sendAlert(lat, long, emergency);
 
         res.sendStatus(201);
       }
