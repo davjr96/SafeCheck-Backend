@@ -143,22 +143,34 @@ module.exports = function(app) {
     var description = req.body.description;
     var location_detail = req.body.location_detail;
 
-    pool.query(
-      "UPDATE alerts SET status='" +
-        status +
-        "',description='" +
-        description +
-        "',location_detail='" +
-        location_detail +
-        "' WHERE phone='" +
-        phone +
-        "';",
-      function(err, dbres) {
+    if (status === "Closed") {
+      pool.query("DELETE FROM alerts WHERE phone='" + phone + "';", function(
+        err,
+        dbres
+      ) {
         if (err) {
           return console.error("error running query", err);
         }
         res.sendStatus(200);
-      }
-    );
+      });
+    } else {
+      pool.query(
+        "UPDATE alerts SET status='" +
+          status +
+          "',description='" +
+          description +
+          "',location_detail='" +
+          location_detail +
+          "' WHERE phone='" +
+          phone +
+          "';",
+        function(err, dbres) {
+          if (err) {
+            return console.error("error running query", err);
+          }
+          res.sendStatus(200);
+        }
+      );
+    }
   });
 };
