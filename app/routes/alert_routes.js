@@ -16,7 +16,7 @@ module.exports = function(app) {
           return console.error("error running query", err2);
         }
         if (dbres2.rows.length > 0) {
-          if (!emergency) {
+          if (emergency == false) {
             client.messages
               .create({
                 to: dbres2.rows[0]["phone"],
