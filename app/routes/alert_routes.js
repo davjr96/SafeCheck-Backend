@@ -18,50 +18,45 @@ module.exports = function(app) {
         }
         if (dbres2.rows.length > 0) {
           if (emergency === "false") {
-            for (var i = 0; i < dbres2.rows.length; i++) {
-              console.log(dbres2.rows[i]["phone"]);
-              client.messages
-                .create({
-                  to: dbres2.rows[i]["phone"],
-                  from: "+16173000841",
-                  body:
-                    "There has been an alert in your location! Open SafeCheck App for more info."
-                })
-                .then(message => console.log(message.sid));
-            }
+            client.messages
+              .create({
+                to: dbres2.rows[0]["phone"],
+                from: "+16173000841",
+                body:
+                  "There has been an alert in your location! Open SafeCheck App for more info."
+              })
+              .then(message => console.log(message.sid));
           } else {
-            for (var i = 0; i < dbres2.rows.length; i++) {
-              client.messages
-                .create({
-                  to: dbres2.rows[i]["phone"],
-                  from: "+16173000841",
-                  body:
-                    "There has been an alert in your location! Emergency Services have been notified Open SafeCheck App for more info."
-                })
-                .then(message => console.log(message.sid));
+            client.messages
+              .create({
+                to: dbres2.rows[0]["phone"],
+                from: "+16173000841",
+                body:
+                  "There has been an alert in your location! Emergency Services have been notified Open SafeCheck App for more info."
+              })
+              .then(message => console.log(message.sid));
 
-              var options = {
-                method: "POST",
-                url: "https://api-sandbox.safetrek.io/v1/alarms",
-                headers: {
-                  Authorization: "Bearer " + cred.accessToken,
-                  "Content-Type": "application/json"
-                },
-                body: {
-                  services: { police: true, fire: false, medical: false },
-                  "location.coordinates": {
-                    lat: parseFloat(lat),
-                    lng: parseFloat(long),
-                    accuracy: 5
-                  }
-                },
-                json: true
-              };
-              request(options, function(error, response, body) {
-                if (error) throw new Error(error);
-                console.log(body);
-              });
-            }
+            var options = {
+              method: "POST",
+              url: "https://api-sandbox.safetrek.io/v1/alarms",
+              headers: {
+                Authorization: "Bearer " + cred.accessToken,
+                "Content-Type": "application/json"
+              },
+              body: {
+                services: { police: true, fire: false, medical: false },
+                "location.coordinates": {
+                  lat: parseFloat(lat),
+                  lng: parseFloat(long),
+                  accuracy: 5
+                }
+              },
+              json: true
+            };
+            request(options, function(error, response, body) {
+              if (error) throw new Error(error);
+              console.log(body);
+            });
           }
         }
       }
